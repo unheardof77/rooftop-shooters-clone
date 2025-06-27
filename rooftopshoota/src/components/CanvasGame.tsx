@@ -56,6 +56,7 @@ export default function CanvasGame() {
         const jumpStrength = -10;
         const armRotationSpeed = 0.02;
         const armLength = 50;
+
         let animationFrameId: number;
 
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -104,16 +105,6 @@ export default function CanvasGame() {
             }
         };
 
-        const renderChars = () => {
-            const blue = blueCharacter.current;
-            const red = redCharacter.current;
-            const helper = (color:string, char:Character)=>{
-                ctx.fillStyle = color;
-                ctx.fillRect(char.x, char.y, character.width, character.height);
-            }
-            helper("blue", blue);
-            helper("red", red)
-        }
 
         const addGravity = ()=>{
             const blue = blueCharacter.current;
@@ -124,6 +115,17 @@ export default function CanvasGame() {
             red.y += red.vy;
         }
 
+
+        const animateArms = ()=>{
+            const blueA = blueArm.current;
+            const redA = redArm.current;
+            if(blueA.charging && blueA.angle >0){
+                blueA.angle -= armRotationSpeed;
+            }
+            if(redA.charging && redA.angle >0){
+                redA.angle -= armRotationSpeed;
+            }
+        }
 
 
         const boundaryChecker = () => {
@@ -151,18 +153,8 @@ export default function CanvasGame() {
             helper(red)
         }
 
-        const renderGameBackground = () => {
-            // Clear and redraw
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'skyblue';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            //stage draw
-            ctx.fillStyle = 'darkblue';
-            ctx.fillRect(stage.x, stage.y, stage.width, stage.height)
-        }
 
-
-        const handleProjectileMovement = ()=>{;
+        const handleProjectileMovement = ()=>{
             const arr = projectilesRef.current;
             const red = redCharacter.current;
             const blue = blueCharacter.current;
@@ -181,31 +173,41 @@ export default function CanvasGame() {
                 }
             }
 
-            if(arr.length){
-                for(let i=0; i< arr.length;i++){
-                    const pro = arr[i];
-                    //if statement controls when delete on x axis
-                    if(pro.x>= canvas.width || pro.x<=0 ){
-                        arr.splice(i,1);
-                        continue;
-                    }
-                    //if statement controls when delete on y axis
-                    if(pro.y <= 0 || pro.y >= canvas.height){
-                        arr.splice(i,1);
-                        continue;
-                    }
-                    //delete if inside a character
-                    if(insideChar(pro)){
-                        arr.splice(i,1);
-                        continue;
-                    }
-                    //moves the position of the pro
-                    pro.x +=pro.vx
-                    pro.y +=pro.vy
-                    arr[i] = pro;
+            for(let i=0; i< arr.length;i++){
+                const pro = arr[i];
+                //if statement controls when delete on x axis
+                if(pro.x>= canvas.width || pro.x<=0 ){
+                    arr.splice(i,1);
+                    continue;
                 }
+                //if statement controls when delete on y axis
+                if(pro.y <= 0 || pro.y >= canvas.height){
+                    arr.splice(i,1);
+                    continue;
+                }
+                //delete if inside a character
+                if(insideChar(pro)){
+                    arr.splice(i,1);
+                    continue;
+                }
+                //moves the position of the pro
+                pro.x +=pro.vx
+                pro.y +=pro.vy
+                arr[i] = pro;
             }
         }
+
+
+        const renderGameBackground = () => {
+            // Clear and redraw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'skyblue';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            //stage draw
+            ctx.fillStyle = 'darkblue';
+            ctx.fillRect(stage.x, stage.y, stage.width, stage.height)
+        }
+
 
         const renderProjectile = ()=>{
             const arr = projectilesRef.current;
@@ -215,6 +217,19 @@ export default function CanvasGame() {
                 ctx.fillRect(pro.x,pro.y,projectile.width, projectile.height)
             }
         }
+
+
+        const renderChars = () => {
+            const blue = blueCharacter.current;
+            const red = redCharacter.current;
+            const helper = (color:string, char:Character)=>{
+                ctx.fillStyle = color;
+                ctx.fillRect(char.x, char.y, character.width, character.height);
+            }
+            helper("blue", blue);
+            helper("red", red)
+        }
+
 
         const renderArms = ()=>{
             const blueA = blueArm.current;
@@ -234,20 +249,8 @@ export default function CanvasGame() {
                 ctx.lineWidth = 5;
                 ctx.stroke();
             }
-
             helper(blueA, isblue)
             helper(redA)
-        }
-
-        const animateArms = ()=>{
-            const blueA = blueArm.current;
-            const redA = redArm.current;
-            if(blueA.charging && blueA.angle >0){
-                blueA.angle -= armRotationSpeed;
-            }
-            if(redA.charging && redA.angle >0){
-                redA.angle -= armRotationSpeed;
-            }
         }
 
         const gameLoop = () => {
