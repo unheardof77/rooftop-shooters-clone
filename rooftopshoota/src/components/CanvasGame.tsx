@@ -1,8 +1,9 @@
 "use client"
 import { useRef, useEffect } from 'react';
-import Arm from '../game/Arm';
-import Character from '../game/Character';
-import Projectile from '../game/Projectile';
+import Arm from '../game/Classes/Arm';
+import Character from '../game/Classes/Character';
+import Projectile from '../game/Classes/Projectile';
+import {stage, gravity, jumpStrength} from '../game/variables'
 
 
 interface Keys {
@@ -13,29 +14,46 @@ interface Keys {
 }
 
 export default function CanvasGame() {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const BlueCharacter = new Character({ x: 350, y: 300, vx: 0, vy: 0, jumping: false, color: "blue" });
-    const RedCharacter = new Character({ x: 600, y: 300, vx: 0, vy: 0, jumping: false, color: "red" });
-    const BlueArm = new Arm({ angle: Math.PI / 2, charging: false, owner: "blue", x: 350, y: 350 });
-    const RedArm = new Arm({ angle: Math.PI / 2, charging: false, owner: "red", x: 600, y: 350 });
     const keysRef = useRef<Keys>({ ArrowUp: false, ArrowDown: false, w: false, s: false });
-
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const projectilesRef = useRef<Projectile[]>([])
+
+    const BlueCharacter = new Character({ 
+        x: 350,
+        y: 300,
+        vx: 0,
+        vy: 0,
+        jumping: false,
+        color: "blue"
+    });
+    const RedCharacter = new Character({ x: 600,
+        y: 300,
+        vx: 0,
+        vy: 0,
+        jumping: false,
+        color: "red"
+    });
+    const BlueArm = new Arm({ 
+        angle: Math.PI / 2,
+        charging: false,
+        owner: "blue",
+        x: 350, y: 350
+    });
+    const RedArm = new Arm({ 
+        angle: Math.PI / 2,
+        charging: false,
+        owner: "red",
+        x: 600, y: 350 
+    });
+
 
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas?.getContext('2d');
         if (!canvas || !ctx) return;
-
-        //game variables
+        let animationFrameId: number;
         canvas.width = 1000;
         canvas.height = 800;
-        const stage = { x: 250, y: 400, width: 500, height: 400 };
-        const projectile = { height: 6, width: 6 }
-        const gravity = 0.5;
-        const jumpStrength = -10;
-
-        let animationFrameId: number;
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key in keysRef.current && e.key === "s") {
@@ -129,7 +147,7 @@ export default function CanvasGame() {
                 //renders all projectiles on screen.
                 projectilesRef.current[i].renderProjectile(ctx);
             }
-            
+
             animationFrameId = requestAnimationFrame(gameLoop);
         };
 
