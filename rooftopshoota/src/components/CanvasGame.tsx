@@ -3,7 +3,7 @@ import { useRef, useEffect } from 'react';
 import Arm from '../game/Classes/Arm';
 import Character from '../game/Classes/Character';
 import Projectile from '../game/Classes/Projectile';
-import {stage, gravity, jumpStrength, canvas, muzzleOffset} from '../game/variables'
+import { stage, gravity, jumpStrength, canvas, muzzleOffset } from '../game/variables'
 
 
 interface Keys {
@@ -12,39 +12,41 @@ interface Keys {
     w: boolean;
     s: boolean;
 }
+const BlueCharacter = new Character({
+    x: 350,
+    y: 300,
+    vx: 0,
+    vy: 0,
+    jumping: false,
+    color: "blue"
+});
+const RedCharacter = new Character({
+    x: 600,
+    y: 300,
+    vx: 0,
+    vy: 0,
+    jumping: false,
+    color: "red"
+});
+const BlueArm = new Arm({
+    angle: Math.PI / 2,
+    charging: false,
+    owner: "blue",
+    x: 400, y: 350
+});
+const RedArm = new Arm({
+    angle: Math.PI / 2,
+    charging: false,
+    owner: "red",
+    x: 600, y: 350
+});
 
 export default function CanvasGame() {
     const keysRef = useRef<Keys>({ ArrowUp: false, ArrowDown: false, w: false, s: false });
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const projectilesRef = useRef<Projectile[]>([])
 
-    const BlueCharacter = new Character({ 
-        x: 350,
-        y: 300,
-        vx: 0,
-        vy: 0,
-        jumping: false,
-        color: "blue"
-    });
-    const RedCharacter = new Character({ x: 600,
-        y: 300,
-        vx: 0,
-        vy: 0,
-        jumping: false,
-        color: "red"
-    });
-    const BlueArm = new Arm({ 
-        angle: Math.PI / 2,
-        charging: false,
-        owner: "blue",
-        x: 400, y: 350
-    });
-    const RedArm = new Arm({ 
-        angle: Math.PI / 2,
-        charging: false,
-        owner: "red",
-        x: 600, y: 350 
-    });
+
 
 
     useEffect(() => {
@@ -56,12 +58,12 @@ export default function CanvasGame() {
         canvs.height = canvas.height;
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key in keysRef.current && e.key === "s") {
+            if (e.key in keysRef.current && e.key === "s" && !BlueCharacter.jumping) {
                 keysRef.current[e.key as keyof typeof keysRef.current] = true;
                 BlueCharacter.vy = jumpStrength;
                 BlueCharacter.jumping = true;
             }
-            if (e.key in keysRef.current && e.key === "ArrowDown") {
+            if (e.key in keysRef.current && e.key === "ArrowDown" && !RedCharacter.jumping) {
                 keysRef.current[e.key as keyof typeof keysRef.current] = true;
                 RedCharacter.vy = jumpStrength;
                 RedCharacter.jumping = true;
@@ -121,14 +123,14 @@ export default function CanvasGame() {
             RedCharacter.addGravity(gravity);
             BlueCharacter.addGravity(gravity);
             //Attach the arms to character
-            RedCharacter.attachArm({arm:RedArm});
-            BlueCharacter.attachArm({arm:BlueArm});
+            RedCharacter.attachArm({ arm: RedArm });
+            BlueCharacter.attachArm({ arm: BlueArm });
             //start animation of arms rotation
             RedArm.animateArm();
             BlueArm.animateArm();
             // Enforce boundaries of map, stage, and projectile.
-            RedCharacter.boundaryChecker({ canvas:canvs, stage });
-            BlueCharacter.boundaryChecker({ canvas:canvs, stage });
+            RedCharacter.boundaryChecker({ canvas: canvs, stage });
+            BlueCharacter.boundaryChecker({ canvas: canvs, stage });
 
             for (let i = 0; i < projectilesRef.current.length; i++) {
                 //take care of projectile out of bounds/in character
