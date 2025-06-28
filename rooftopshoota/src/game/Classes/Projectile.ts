@@ -1,5 +1,9 @@
 import Character from "./Character";
 
+import collisionHelper from "../Helper/collisionHelper";
+
+import { projectile } from "../variables";
+
 interface ProjectileInt {
     x: number;
     y: number;
@@ -37,8 +41,8 @@ class Projectile implements ProjectileInt {
     vx: number;
     vy: number;
 
-    static width = 6;
-    static height = 6;
+    static width = projectile.width;
+    static height = projectile.height;
 
     constructor({ x, y, vx, vy }: ProjectileInt) {
         this.x = x;
@@ -63,10 +67,8 @@ class Projectile implements ProjectileInt {
     }
 
     isInside({ red, blue }: IsInside): boolean {
-        const hitRed = this.x > red.x && this.x < red.x + Character.width &&
-            this.y > red.y && this.y < red.y + Character.height;
-        const hitBlue = this.x > blue.x && this.x < blue.x + Character.width &&
-            this.y > blue.y && this.y < blue.y + Character.height;
+        const hitRed = collisionHelper({projectile:this, character:red})
+        const hitBlue = collisionHelper({projectile:this, character:blue})
         return hitRed || hitBlue;
     }
 

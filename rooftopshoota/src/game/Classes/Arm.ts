@@ -1,3 +1,5 @@
+
+
 interface ArmInt {
     angle: number; // in radians
     charging: boolean;
@@ -13,6 +15,8 @@ interface Position {
 
 import Character from "./Character";
 
+import { rotationSpeed, armLength } from "../variables";
+
 
 class Arm implements ArmInt {
     angle: number; // in radians
@@ -20,8 +24,8 @@ class Arm implements ArmInt {
     owner: 'blue' | 'red';
     x: number;
     y: number;
-    static rotationSpeed = 0.02;
-    static armLength = 50;
+    static rotationSpeed = rotationSpeed;
+    static armLength = armLength;
 
     constructor({ angle, charging, owner, x, y }: ArmInt) {
         this.angle = angle;
@@ -45,8 +49,13 @@ class Arm implements ArmInt {
     }
 
     set setPosition({ x, y }: Position) {
-        this.x = x;
-        this.y = y;
+        if(this.owner === "blue"){
+            this.x = x +Character.width;
+            this.y = y +Character.height/2;
+        }else {
+            this.x = x;
+            this.y = y +Character.height/2;
+        }
     }
     set setAngle(angle: number) {
         this.angle = angle;
@@ -64,16 +73,19 @@ class Arm implements ArmInt {
         }
     }
     renderArm(ctx: CanvasRenderingContext2D) {
-        const armOrigin = this.owner === "blue" ? { x: this.x + Character.width, y: this.y + (Character.height / 2) } : { x: this.x, y: this.y + (Character.height / 2) }
-        const x = armOrigin.x + Arm.armLength * Math.cos(this.angle);
-        const y = armOrigin.y - Arm.armLength * Math.sin(this.angle);
-        ctx.beginPath();
-        ctx.moveTo(armOrigin.x, armOrigin.y);
-        ctx.lineTo(x, y);
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 5;
-        ctx.stroke();
+    ctx.save();
 
+    // Move origin to the shoulder (pivot point)
+    ctx.translate(this.x, this.y);
+
+    // Rotate around the new origin
+    ctx.rotate(this.angle);
+
+    // Draw the arm as a rectangle or line FROM the pivot (0,0) outward
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, -2, Arm.armLength, 4); // horizontal arm, centered on y-axis
+
+    ctx.restore();
     }
 }
 

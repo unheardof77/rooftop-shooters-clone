@@ -3,7 +3,7 @@ import { useRef, useEffect } from 'react';
 import Arm from '../game/Classes/Arm';
 import Character from '../game/Classes/Character';
 import Projectile from '../game/Classes/Projectile';
-import {stage, gravity, jumpStrength} from '../game/variables'
+import {stage, gravity, jumpStrength, canvas, muzzleOffset} from '../game/variables'
 
 
 interface Keys {
@@ -37,7 +37,7 @@ export default function CanvasGame() {
         angle: Math.PI / 2,
         charging: false,
         owner: "blue",
-        x: 350, y: 350
+        x: 400, y: 350
     });
     const RedArm = new Arm({ 
         angle: Math.PI / 2,
@@ -48,12 +48,12 @@ export default function CanvasGame() {
 
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext('2d');
-        if (!canvas || !ctx) return;
+        const canvs = canvasRef.current;
+        const ctx = canvs?.getContext('2d');
+        if (!canvs || !ctx) return;
         let animationFrameId: number;
-        canvas.width = 1000;
-        canvas.height = 800;
+        canvs.width = canvas.width;
+        canvs.height = canvas.height;
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key in keysRef.current && e.key === "s") {
@@ -79,6 +79,7 @@ export default function CanvasGame() {
         };
 
         const handleKeyUp = (e: KeyboardEvent) => {
+            // enough to move the spawn out of collision
             if (e.key in keysRef.current) {
                 keysRef.current[e.key as keyof typeof keysRef.current] = false;
             }
@@ -86,18 +87,18 @@ export default function CanvasGame() {
                 BlueArm.setCharging = false;
                 const angle = BlueArm.getAngle;
                 const pos = BlueArm.position;
-                const x = pos.x + Arm.armLength * Math.cos(angle);
-                const y = pos.y - Arm.armLength * Math.sin(angle);
-                const Pro = new Projectile({ x, y, vx: Math.cos(angle) * 5, vy: Math.sin(angle) * 5 });
+                const x = pos.x + (Arm.armLength + muzzleOffset) * Math.cos(angle);
+                const y = pos.y + (Arm.armLength + muzzleOffset) * Math.sin(angle);
+                const Pro = new Projectile({ x, y, vx: Math.cos(angle) * 5, vy: -Math.sin(angle) * 5 });
                 projectilesRef.current.push(Pro)
                 BlueArm.setAngle = Math.PI / 2;
             } else if (e.key === 'ArrowUp') {
                 RedArm.setCharging = false;
                 const angle = RedArm.getAngle;
                 const pos = RedArm.position;
-                const x = pos.x + Arm.armLength * Math.cos(angle);
-                const y = pos.y - Arm.armLength * Math.sin(angle);
-                const Pro = new Projectile({ x, y, vx: Math.cos(angle) * 5, vy: Math.sin(angle) * 5 })
+                const x = pos.x + (Arm.armLength + muzzleOffset) * Math.cos(angle);
+                const y = pos.y + (Arm.armLength + muzzleOffset) * Math.sin(angle);
+                const Pro = new Projectile({ x, y, vx: Math.cos(angle) * 5, vy: -Math.sin(angle) * 5 })
                 projectilesRef.current.push(Pro)
                 RedArm.setAngle = Math.PI / 2;
             }
@@ -119,12 +120,15 @@ export default function CanvasGame() {
             //Apply Gravity
             RedCharacter.addGravity(gravity);
             BlueCharacter.addGravity(gravity);
+            //Attach the arms to character
+            RedCharacter.attachArm({arm:RedArm});
+            BlueCharacter.attachArm({arm:BlueArm});
             //start animation of arms rotation
             RedArm.animateArm();
             BlueArm.animateArm();
             // Enforce boundaries of map, stage, and projectile.
-            RedCharacter.boundaryChecker({ canvas, stage });
-            BlueCharacter.boundaryChecker({ canvas, stage });
+            RedCharacter.boundaryChecker({ canvas:canvs, stage });
+            BlueCharacter.boundaryChecker({ canvas:canvs, stage });
 
             for (let i = 0; i < projectilesRef.current.length; i++) {
                 //take care of projectile out of bounds/in character
@@ -132,7 +136,7 @@ export default function CanvasGame() {
                     red: RedCharacter,
                     blue: BlueCharacter,
                     refarr: projectilesRef.current,
-                    canvas: canvas,
+                    canvas: canvs,
                     i: i
                 });
             }
@@ -147,7 +151,6 @@ export default function CanvasGame() {
                 //renders all projectiles on screen.
                 projectilesRef.current[i].renderProjectile(ctx);
             }
-
             animationFrameId = requestAnimationFrame(gameLoop);
         };
 

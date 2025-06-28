@@ -1,3 +1,5 @@
+import Arm from "./Arm";
+import { character } from "../variables";
 
 interface CharacterInt {
     x: number;
@@ -27,7 +29,9 @@ interface BoundaryChecker {
         height: number;
     }
 }
-
+interface AttachArm {
+    arm:Arm;
+}
 
 class Character implements CharacterInt {
     x: number;
@@ -37,8 +41,8 @@ class Character implements CharacterInt {
     jumping: boolean;
     color: "red" | "blue";
 
-    static height = 100;
-    static width = 50;
+    static height = character.height;
+    static width = character.width;
     constructor({ color, x, y, vx, vy, jumping }: CharacterInt) {
         this.x = x;
         this.y = y;
@@ -91,6 +95,10 @@ class Character implements CharacterInt {
             this.vy = 0;
         }
     }
+    attachArm({arm}:AttachArm){
+        arm.setPosition = {x:this.x,y:this.y}
+    }
+
     renderCharacter(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, Character.width, Character.height);

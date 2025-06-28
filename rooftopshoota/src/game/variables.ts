@@ -1,3 +1,9 @@
 export const stage = { x: 250, y: 400, width: 500, height: 400 };
 export const gravity = 0.5;
 export const jumpStrength = -10;
+export const rotationSpeed = 0.02;
+export const armLength = 50;
+export const character = { width:50, height:100 }
+export const projectile = { width:6, height:6 }
+export const canvas = { width:1000, height:800 }
+export const muzzleOffset = 20;
