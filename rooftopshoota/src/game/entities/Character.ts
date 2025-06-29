@@ -1,16 +1,31 @@
-import {Box, Circle} from 'planck';
 import { world } from '../engine/world';
-import { CHARACTER, METER } from '../utils/constants';
+import { Circle, Box, Vec2 } from 'planck';
+import { CHARACTER } from '../utils/constants';
 
 export const createCharacter = (x: number, y: number) => {
     const character = world.createBody({
         type: 'dynamic',
-        position: {x,y},
-        angularDamping: 0.2,
+        position: { x, y },
+        angularDamping: 0.8,
+        fixedRotation: false
     });
-    const chhP = CHARACTER.height/2/METER;
-    const chwP = CHARACTER.width/2/METER;
-    character.createFixture(new Box(chwP, chhP), { density: 10, friction: 0.3 });
-    character.createFixture(new Circle(0.5), {density:10, isSensor:true});
+
+    // Bottom circle (jump contact point)
+    const bottomFixture = character.createFixture(new Circle(CHARACTER.radius), {
+        density: 3,
+        friction: 0.3,
+        restitution: 0.2
+    });
+    bottomFixture.setUserData({ type: 'characterBottom' });
+
+    // Upper body
+    const bodyHeight = CHARACTER.height - CHARACTER.radius;
+    const topFixture = character.createFixture(
+        new Box(CHARACTER.width / 2, bodyHeight / 2,
+            new Vec2(0, CHARACTER.radius + bodyHeight / 2)),
+        { density: 0.5, friction: 0.2 }
+    );
+    topFixture.setUserData({ type: 'characterTop' });
+
     return character;
 };

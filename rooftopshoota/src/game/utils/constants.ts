@@ -1,12 +1,29 @@
 import { Vec2Value, Vec2 } from "planck";
-
 export const GRAVITY = -5;
 export const METER = 30; // 50px = 1 meter 
-export const JUMP_IMPULSE:Vec2Value = new Vec2(0, 100);
 export const PROJECTILE_SPEED = 20;
 export const STAGE = { x: 250, y: 400, width: 500, height: 400 };
 export const ARM_ROTATION_SPEED = 0.02;
 export const ARM_LENGTH = 1; // in meters
-export const CHARACTER = { width:50, height:100 }
-export const PROJECTILE = { width:6, height:6 }
-export const CANVAS = { width:1000, height:800 }
+export const CHARACTER = {
+    width: 0.8,     // Physics units (meters)
+    height: 2.0,    // Physics units (meters)
+    radius: 0.5     // Physics units (meters)
+};
+export const PROJECTILE = { width: 6, height: 6 }
+export const CANVAS = { width: 1000, height: 800 }
+export const JUMP_SUSTAIN_FORCE = 5;
+export const MAX_JUMP_DURATION = 300; // ms
+export const LANDING_THRESHOLD = 5; // Minimum velocity for roll
+export const ROLL_MULTIPLIER = 2; // Roll intensity
+export const PHYSICS_CONFIG = {
+    stabilizationForce: 50,
+    angularDamping: 0.8,
+    bottomDensity: 3.0,
+    topDensity: 0.5
+};
+export const STABILIZATION_FORCE = 2;
+export const JUMP_IMPULSE = 10; // Total jump force magnitude
+export const HORIZONTAL_JUMP_FACTOR = 0.5; // Ratio of horizontal to vertical force
+export const MAX_JUMP_ANGLE = Math.PI/2; // 60 degrees maximum tilt for jumping
+export const JUMP_COOLDOWN = 500; // 300ms cooldown

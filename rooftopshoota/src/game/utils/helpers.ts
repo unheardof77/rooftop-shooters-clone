@@ -1,5 +1,5 @@
 import { Body } from 'planck';
-import { METER, CANVAS, CHARACTER } from './constants';
+import { METER, CANVAS, CHARACTER,MAX_JUMP_ANGLE, MAX_JUMP_DURATION } from './constants';
 
 export const returnStageDimensions = (canvasWidth: number, canvasHeight: number) => {
     //desired stage diemensions in pixels
@@ -27,3 +27,16 @@ export const returnCharacterSpawnPositions = () => {
 
     return { blueCharacterSpawnX, BlueCharacterSpawnY, redCharacterSpawnX, redCharacterSpawnY };
 }
+
+export const clampJumpAngle = (angle: number) => {
+    // Normalize angle to -π to π range
+    let normalized = angle % (Math.PI * 2);
+    if (normalized > Math.PI) normalized -= Math.PI * 2;
+    if (normalized < -Math.PI) normalized += Math.PI * 2;
+    
+    // Clamp to maximum jump angle
+    return Math.max(
+        -MAX_JUMP_ANGLE, 
+        Math.min(MAX_JUMP_ANGLE, normalized)
+    );
+};

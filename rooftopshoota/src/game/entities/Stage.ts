@@ -22,7 +22,8 @@ export const createStage = ({canvasWidth, canvasHeight}:CreateStage) => {
 
 
     const stage = world.createBody({type:'static'});
-    stage.createFixture(new Box(bhwP, bhhP), {friction: 0.3});
+    const fixture = stage.createFixture(new Box(bhwP, bhhP), {friction: 0.3, density:0});
+    fixture.setUserData({ type: 'ground' });
     stage.setPosition(new Vec2(sxP,syP))
     return stage;
 };
