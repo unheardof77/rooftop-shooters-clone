@@ -1,5 +1,3 @@
-// pages/index.tsx
-import dynamic from 'next/dynamic';
 import CanvasGame from '../components/CanvasGame';
 import './homepage.css'
 

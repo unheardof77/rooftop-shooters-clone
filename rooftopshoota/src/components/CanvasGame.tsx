@@ -1,172 +1,95 @@
 "use client"
-import { useRef, useEffect } from 'react';
-import Arm from '../game/Classes/Arm';
-import Character from '../game/Classes/Character';
-import Projectile from '../game/Classes/Projectile';
-import { stage, gravity, jumpStrength, canvas, muzzleOffset } from '../game/variables'
+import { useEffect, useRef } from 'react';
+import { stepPhysics } from '../game/engine/physicsLoop';
+import { createCharacter } from '../game/entities/Character';
+import { createStage } from '../game/entities/Stage';
+import { createBackground } from '../game/utils/drawutils';
+import { returnCharacterSpawnPositions } from '../game/utils/helpers';
+import { registerContacts } from '../game/engine/contactListeners';
+import { Body } from 'planck';
+import { createArm } from '../game/entities/Arm';
 
+import { stabilizeCharacter } from '../game/engine/physicsUtils';
+import { addCharacterJump } from '../game/entities/entityUtils/characterUtils';
+import { addArmMotorControl } from '../game/entities/entityUtils/armUtils';
+import { projectileSystem } from '../game/systems/projectileSystem';
+import { renderStage } from '../game/systems/renderUtils';
 
-interface Keys {
-    ArrowUp: boolean;
-    ArrowDown: boolean;
-    w: boolean;
-    s: boolean;
-}
-const BlueCharacter = new Character({
-    x: 350,
-    y: 300,
-    vx: 0,
-    vy: 0,
-    jumping: false,
-    color: "blue"
-});
-const RedCharacter = new Character({
-    x: 600,
-    y: 300,
-    vx: 0,
-    vy: 0,
-    jumping: false,
-    color: "red"
-});
-const BlueArm = new Arm({
-    angle: Math.PI / 2,
-    charging: false,
-    owner: "blue",
-    x: 400, y: 350
-});
-const RedArm = new Arm({
-    angle: Math.PI / 2,
-    charging: false,
-    owner: "red",
-    x: 600, y: 350
-});
+import { Keys } from '../game/utils/types';
+import { renderCharacters, renderArms } from '../game/systems/renderUtils';
+import { createHandleKeyDown, createHandleKeyUp } from '../game/systems/inputUtils';
+import { CANVAS } from '../game/utils/constants';
 
 export default function CanvasGame() {
-    const keysRef = useRef<Keys>({ ArrowUp: false, ArrowDown: false, w: false, s: false });
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const projectilesRef = useRef<Projectile[]>([])
-
-
-
-
+    const keysRef = useRef<Keys>({ w: false, e: false, i: false, o: false });
+    const prevKeysRef = useRef<Keys>({ w: false, e: false, i: false, o: false });
+    const projectilesRef = useRef<Body[]>([]);
     useEffect(() => {
-        const canvs = canvasRef.current;
-        const ctx = canvs?.getContext('2d');
-        if (!canvs || !ctx) return;
-        let animationFrameId: number;
-        canvs.width = canvas.width;
-        canvs.height = canvas.height;
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (!canvas || !ctx) return;
 
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key in keysRef.current && e.key === "s" && !BlueCharacter.jumping) {
-                keysRef.current[e.key as keyof typeof keysRef.current] = true;
-                BlueCharacter.vy = jumpStrength;
-                BlueCharacter.jumping = true;
-            }
-            if (e.key in keysRef.current && e.key === "ArrowDown" && !RedCharacter.jumping) {
-                keysRef.current[e.key as keyof typeof keysRef.current] = true;
-                RedCharacter.vy = jumpStrength;
-                RedCharacter.jumping = true;
-            }
-            if (e.key in keysRef.current && e.key === "w") {
-                keysRef.current[e.key as keyof typeof keysRef.current] = true;
-                BlueArm.setCharging = true;
-            }
-            if (e.key in keysRef.current && e.key === "ArrowUp") {
-                keysRef.current[e.key as keyof typeof keysRef.current] = true;
-                RedArm.setCharging = true;
-            }
-
-
+        const jumpState = {
+            blue: { isJumping: false, startTime: 0, lastJumpTime: 0 },
+            red: { isJumping: false, startTime: 0, lastJumpTime: 0 }
         };
+        const spawn = returnCharacterSpawnPositions();
 
-        const handleKeyUp = (e: KeyboardEvent) => {
-            // enough to move the spawn out of collision
-            if (e.key in keysRef.current) {
-                keysRef.current[e.key as keyof typeof keysRef.current] = false;
-            }
-            if (e.key === 'w') {
-                BlueArm.setCharging = false;
-                const angle = BlueArm.getAngle;
-                const pos = BlueArm.position;
-                const x = pos.x + (Arm.armLength + muzzleOffset) * Math.cos(angle);
-                const y = pos.y + (Arm.armLength + muzzleOffset) * Math.sin(angle);
-                const Pro = new Projectile({ x, y, vx: Math.cos(angle) * 5, vy: -Math.sin(angle) * 5 });
-                projectilesRef.current.push(Pro)
-                BlueArm.setAngle = Math.PI / 2;
-            } else if (e.key === 'ArrowUp') {
-                RedArm.setCharging = false;
-                const angle = RedArm.getAngle;
-                const pos = RedArm.position;
-                const x = pos.x + (Arm.armLength + muzzleOffset) * Math.cos(angle);
-                const y = pos.y + (Arm.armLength + muzzleOffset) * Math.sin(angle);
-                const Pro = new Projectile({ x, y, vx: Math.cos(angle) * 5, vy: -Math.sin(angle) * 5 })
-                projectilesRef.current.push(Pro)
-                RedArm.setAngle = Math.PI / 2;
-            }
-        };
+        canvas.width = CANVAS.width;
+        canvas.height = CANVAS.height;
 
+        //CREATE STAGE
+        const stage = createStage({ canvasWidth: canvas.width, canvasHeight: canvas.height });
+        //CREATE CHARACTERS
+        const blueCharacter = createCharacter(spawn.bx, spawn.by);
+        const redCharacter = createCharacter(spawn.rx, spawn.ry);
+        //ATTACH ARMS
+        const { arm: blueArm, joint: blueJoint } = createArm(blueCharacter);
+        const { arm: redArm, joint: redJoint } = createArm(redCharacter);
+        //REGISTER COLLISION
+        const canBlueJump = registerContacts()
+        const canRedJump = registerContacts()
 
-        const renderGameBackground = () => {
-            // Clear and redraw
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'skyblue';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            //stage draw
-            ctx.fillStyle = 'darkblue';
-            ctx.fillRect(stage.x, stage.y, stage.width, stage.height)
-        }
+        //REGISTER EVENT LISTENERS
+        const handleKeyDown = createHandleKeyDown(keysRef);
+        const handleKeyUp = createHandleKeyUp(keysRef);
 
         const gameLoop = () => {
+            //PHYSICS
+            stepPhysics();
+            stabilizeCharacter(blueCharacter);
+            stabilizeCharacter(redCharacter);
 
-            //Apply Gravity
-            RedCharacter.addGravity(gravity);
-            BlueCharacter.addGravity(gravity);
-            //Attach the arms to character
-            RedCharacter.attachArm({ arm: RedArm });
-            BlueCharacter.attachArm({ arm: BlueArm });
-            //start animation of arms rotation
-            RedArm.animateArm();
-            BlueArm.animateArm();
-            // Enforce boundaries of map, stage, and projectile.
-            RedCharacter.boundaryChecker({ canvas: canvs, stage });
-            BlueCharacter.boundaryChecker({ canvas: canvs, stage });
+            //RESET BACKGROUND (RENDER = REDRAW)
+            createBackground(ctx, "lightyellow")
 
-            for (let i = 0; i < projectilesRef.current.length; i++) {
-                //take care of projectile out of bounds/in character
-                projectilesRef.current[i].handleProjectileMovement({
-                    red: RedCharacter,
-                    blue: BlueCharacter,
-                    refarr: projectilesRef.current,
-                    canvas: canvs,
-                    i: i
-                });
-            }
+            //INPUT LISTENERS
+            addCharacterJump({ canBlueJump, blueCharacter, canRedJump, redCharacter, keysRef, jumpState })
+            addArmMotorControl({ keysRef, blueJoint, redJoint })
 
-            //render all the stuff lol
-            renderGameBackground();
-            RedCharacter.renderCharacter(ctx);
-            BlueCharacter.renderCharacter(ctx);
-            RedArm.renderArm(ctx);
-            BlueArm.renderArm(ctx);
-            for (let i = 0; i < projectilesRef.current.length; i++) {
-                //renders all projectiles on screen.
-                projectilesRef.current[i].renderProjectile(ctx);
-            }
-            animationFrameId = requestAnimationFrame(gameLoop);
+            //PROJECTILE RENDER/DELETION
+            projectileSystem({ prevKeysRef, keysRef, blueArm, blueCharacter, redArm, redCharacter, projectilesRef, ctx })
+
+            //RENDERING
+            renderStage(stage, ctx);
+            renderCharacters(ctx, { blueCharacter, redCharacter })
+            renderArms(ctx, { blueArm, redArm, blueCharacter, redCharacter })
+
+
+            requestAnimationFrame(gameLoop);
         };
 
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-        animationFrameId = requestAnimationFrame(gameLoop);
+        gameLoop();
+
+        window.addEventListener("keydown", handleKeyDown)
+        window.addEventListener("keyup", handleKeyUp)
 
         return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-            cancelAnimationFrame(animationFrameId);
-        };
+            window.removeEventListener("keydown", handleKeyDown)
+            window.removeEventListener("keyup", handleKeyUp)
+        }
     }, []);
 
     return <canvas ref={canvasRef} />;
 }
-
