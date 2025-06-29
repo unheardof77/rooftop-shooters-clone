@@ -1,0 +1,13 @@
+{
+  "name": "rooftop-shooters-clone",
+  "version": "1.0.0",
+  "description": "This is a clone of the game rooftop shooters. https://poki.com/en/g/rooftop-snipers",
+  "scripts": {
+    "dev": "cd rooftopshoota && npm run dev"
+  },
+  "engines": {
+    "node": "22.0.0"
+  },
+  "author": "Unheardof77",
+  "license": "MIT"
+}

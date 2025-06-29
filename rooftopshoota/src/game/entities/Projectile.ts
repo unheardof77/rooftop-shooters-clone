@@ -1,17 +1,29 @@
-import {Vec2, Circle} from 'planck';
+import { Circle, Vec2 } from 'planck';
 import { world } from '../engine/world';
-import { PROJECTILE_SPEED } from '../utils/constants';
+import { PROJECTILE_RADIUS, PROJECTILE_SPEED } from '../utils/constants';
 
 export const createProjectile = (x: number, y: number, angle: number) => {
-    const bullet = world.createBody({
+    const projectile = world.createBody({
         type: 'dynamic',
         position: new Vec2(x, y),
-        bullet: true,
+        bullet: true, // Enable continuous collision detection
+        fixedRotation: true
     });
-    bullet.createFixture(new Circle(0.2), { density: 1.0 });
-    bullet.setLinearVelocity(new Vec2(
-        Math.cos(angle) * PROJECTILE_SPEED,
-        Math.sin(angle) * PROJECTILE_SPEED
-    ));
-    return bullet;
+    
+    projectile.createFixture(new Circle(PROJECTILE_RADIUS), {
+        density: 0.1,
+        restitution: 0.8,
+        userData: { type: 'projectile' }
+    });
+    
+    // Calculate direction vector from angle
+    const direction = new Vec2(
+        Math.sin(angle),
+        Math.cos(angle)
+    );
+    
+    // Set initial velocity
+    projectile.setLinearVelocity(direction.mul(-PROJECTILE_SPEED));
+    
+    return projectile;
 };

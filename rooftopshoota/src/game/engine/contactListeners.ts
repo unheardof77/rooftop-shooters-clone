@@ -1,5 +1,5 @@
 import { world } from './world';
-import { Body, Fixture, Vec2 } from 'planck';
+import { Vec2 } from 'planck';
 import { LANDING_THRESHOLD, ROLL_MULTIPLIER } from '../utils/constants';
 
 
@@ -37,7 +37,20 @@ export const registerContacts = () => {
             bodyA.applyLinearImpulse(impulse, bodyA.getWorldCenter());
             bodyB.applyLinearImpulse(impulse.neg(), bodyB.getWorldCenter());
         }
-    });
+        // Projectile hits character
+        if ((aData?.type === "projectile" && bData?.type === "character") ||
+            (bData?.type === "projectile" && aData?.type === "character")) {
+
+            const projectile = aData?.type === "projectile"
+                ? fixtureA.getBody()
+                : fixtureB.getBody();
+
+            // Mark projectile for removal
+            projectile.setUserData({ shouldRemove: true });
+
+            // Add damage effects here
+            }
+        });
 
     world.on('end-contact', (contact) => {
         const fixtureA = contact.getFixtureA();
@@ -61,9 +74,9 @@ export const registerContacts = () => {
             if (data?.type === 'characterBottom') {
                 const character = fixture.getBody();
                 const velocity = character.getLinearVelocity();
-
+                console.log(`Character velocity: ${velocity.x}, ${velocity.y}`);
                 // Detect landing
-                if (velocity.y < -LANDING_THRESHOLD) {
+                if (Math.abs(velocity.y) > LANDING_THRESHOLD) {
                     // Only apply horizontal roll, not vertical bounce
                     const rollTorque = velocity.x * ROLL_MULTIPLIER;
                     character.applyTorque(rollTorque);
@@ -73,8 +86,3 @@ export const registerContacts = () => {
     });
     return () => contactCount > 0;
 };
-world.on('begin-contact', contact => {
-
-    // Both characters need to be either bottom or top
-
-});

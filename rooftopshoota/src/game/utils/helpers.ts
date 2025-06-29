@@ -25,7 +25,7 @@ export const returnCharacterSpawnPositions = () => {
     const redCharacterSpawnX = stageRightEdgeP - 3;
     const redCharacterSpawnY = shP + characterHalfHeightP + 0.01;
 
-    return { blueCharacterSpawnX, BlueCharacterSpawnY, redCharacterSpawnX, redCharacterSpawnY };
+    return { bx:blueCharacterSpawnX, by:BlueCharacterSpawnY, rx:redCharacterSpawnX, ry:redCharacterSpawnY };
 }
 
 export const clampJumpAngle = (angle: number) => {

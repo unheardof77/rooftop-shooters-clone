@@ -2,11 +2,8 @@ import {Box, Vec2} from 'planck';
 import { world } from '../engine/world';
 import { METER } from '../utils/constants';
 import { returnStageDimensions } from '../utils/helpers';
+import { CreateStage } from '../utils/types';
 
-interface CreateStage {
-    canvasWidth: number;
-    canvasHeight: number;
-}
 
 export const createStage = ({canvasWidth, canvasHeight}:CreateStage) => {
     const {swP, shP} = returnStageDimensions(canvasWidth, canvasHeight);

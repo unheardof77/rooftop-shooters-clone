@@ -1,8 +1,8 @@
 import { Body, Box, Vec2, RevoluteJoint } from "planck";
 import { world } from "../engine/world";
-import { CHARACTER, METER, ARM_LENGTH } from "../utils/constants";
+import { CHARACTER, ARM_LENGTH } from "../utils/constants";
 
-export default function createArm(character: Body) {
+export  function createArm(character: Body) {
     //attach to top of character
     const armOffset = new Vec2(0, CHARACTER.height / 2);
 
@@ -29,6 +29,6 @@ export default function createArm(character: Body) {
         upperAngle: Math.PI / 4,
         referenceAngle:0
     });
-    
-    return { arm, joint: world.createJoint(joint) };
+    world.createJoint(joint) 
+    return { arm, joint};
 }
