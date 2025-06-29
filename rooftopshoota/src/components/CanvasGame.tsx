@@ -1,172 +1,118 @@
 "use client"
-import { useRef, useEffect } from 'react';
-import Arm from '../game/Classes/Arm';
-import Character from '../game/Classes/Character';
-import Projectile from '../game/Classes/Projectile';
-import { stage, gravity, jumpStrength, canvas, muzzleOffset } from '../game/variables'
-
+import { useEffect, useRef } from 'react';
+import { stepPhysics } from '../game/engine/physicsLoop';
+import { createCharacter } from '../game/entities/Character';
+import { createStage } from '../game/entities/Stage';
+import { toCanvas, toCanvasDimensions } from '../game/utils/scale';
+import { CHARACTER, METER, JUMP_IMPULSE } from '../game/utils/constants';
+import { createBackground, drawCharacter, drawStage } from '../game/utils/drawutils'
+import { returnCharacterSpawnPositions } from '../game/utils/helpers';
+import { registerContacts } from '../game/engine/contactListeners';
+import { Box, Fixture, Vec2 } from 'planck';
 
 interface Keys {
-    ArrowUp: boolean;
-    ArrowDown: boolean;
     w: boolean;
-    s: boolean;
+    e: boolean;
+    i: boolean;
+    o: boolean;
 }
-const BlueCharacter = new Character({
-    x: 350,
-    y: 300,
-    vx: 0,
-    vy: 0,
-    jumping: false,
-    color: "blue"
-});
-const RedCharacter = new Character({
-    x: 600,
-    y: 300,
-    vx: 0,
-    vy: 0,
-    jumping: false,
-    color: "red"
-});
-const BlueArm = new Arm({
-    angle: Math.PI / 2,
-    charging: false,
-    owner: "blue",
-    x: 400, y: 350
-});
-const RedArm = new Arm({
-    angle: Math.PI / 2,
-    charging: false,
-    owner: "red",
-    x: 600, y: 350
-});
 
 export default function CanvasGame() {
-    const keysRef = useRef<Keys>({ ArrowUp: false, ArrowDown: false, w: false, s: false });
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const projectilesRef = useRef<Projectile[]>([])
-
-
-
-
+    const keysRef = useRef<Keys>({ w: false, e: false, i: false, o: false })
     useEffect(() => {
-        const canvs = canvasRef.current;
-        const ctx = canvs?.getContext('2d');
-        if (!canvs || !ctx) return;
-        let animationFrameId: number;
-        canvs.width = canvas.width;
-        canvs.height = canvas.height;
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        canvas.width = 1000;
+        canvas.height = 800;
+        //create the stage
+        const stage = createStage({ canvasWidth: canvas.width, canvasHeight: canvas.height });
+
+        const {
+            blueCharacterSpawnX,
+            BlueCharacterSpawnY,
+            redCharacterSpawnX,
+            redCharacterSpawnY
+        } = returnCharacterSpawnPositions();
+
+        const blueCharacter = createCharacter(blueCharacterSpawnX, BlueCharacterSpawnY);
+        const redCharacter = createCharacter(redCharacterSpawnX, redCharacterSpawnY);
+        //register contacts 
+        const canBlueJump = registerContacts(blueCharacter, stage)
+        const canRedJump = registerContacts(redCharacter, stage)
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key in keysRef.current && e.key === "s" && !BlueCharacter.jumping) {
-                keysRef.current[e.key as keyof typeof keysRef.current] = true;
-                BlueCharacter.vy = jumpStrength;
-                BlueCharacter.jumping = true;
-            }
-            if (e.key in keysRef.current && e.key === "ArrowDown" && !RedCharacter.jumping) {
-                keysRef.current[e.key as keyof typeof keysRef.current] = true;
-                RedCharacter.vy = jumpStrength;
-                RedCharacter.jumping = true;
-            }
-            if (e.key in keysRef.current && e.key === "w") {
-                keysRef.current[e.key as keyof typeof keysRef.current] = true;
-                BlueArm.setCharging = true;
-            }
-            if (e.key in keysRef.current && e.key === "ArrowUp") {
-                keysRef.current[e.key as keyof typeof keysRef.current] = true;
-                RedArm.setCharging = true;
-            }
-
-
-        };
-
-        const handleKeyUp = (e: KeyboardEvent) => {
-            // enough to move the spawn out of collision
             if (e.key in keysRef.current) {
-                keysRef.current[e.key as keyof typeof keysRef.current] = false;
+                keysRef.current[e.key as keyof Keys] = true;
             }
-            if (e.key === 'w') {
-                BlueArm.setCharging = false;
-                const angle = BlueArm.getAngle;
-                const pos = BlueArm.position;
-                const x = pos.x + (Arm.armLength + muzzleOffset) * Math.cos(angle);
-                const y = pos.y + (Arm.armLength + muzzleOffset) * Math.sin(angle);
-                const Pro = new Projectile({ x, y, vx: Math.cos(angle) * 5, vy: -Math.sin(angle) * 5 });
-                projectilesRef.current.push(Pro)
-                BlueArm.setAngle = Math.PI / 2;
-            } else if (e.key === 'ArrowUp') {
-                RedArm.setCharging = false;
-                const angle = RedArm.getAngle;
-                const pos = RedArm.position;
-                const x = pos.x + (Arm.armLength + muzzleOffset) * Math.cos(angle);
-                const y = pos.y + (Arm.armLength + muzzleOffset) * Math.sin(angle);
-                const Pro = new Projectile({ x, y, vx: Math.cos(angle) * 5, vy: -Math.sin(angle) * 5 })
-                projectilesRef.current.push(Pro)
-                RedArm.setAngle = Math.PI / 2;
+        }
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (e.key in keysRef.current) {
+                keysRef.current[e.key as keyof Keys] = false;
             }
-        };
-
-
-        const renderGameBackground = () => {
-            // Clear and redraw
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'skyblue';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            //stage draw
-            ctx.fillStyle = 'darkblue';
-            ctx.fillRect(stage.x, stage.y, stage.width, stage.height)
         }
 
         const gameLoop = () => {
-
-            //Apply Gravity
-            RedCharacter.addGravity(gravity);
-            BlueCharacter.addGravity(gravity);
-            //Attach the arms to character
-            RedCharacter.attachArm({ arm: RedArm });
-            BlueCharacter.attachArm({ arm: BlueArm });
-            //start animation of arms rotation
-            RedArm.animateArm();
-            BlueArm.animateArm();
-            // Enforce boundaries of map, stage, and projectile.
-            RedCharacter.boundaryChecker({ canvas: canvs, stage });
-            BlueCharacter.boundaryChecker({ canvas: canvs, stage });
-
-            for (let i = 0; i < projectilesRef.current.length; i++) {
-                //take care of projectile out of bounds/in character
-                projectilesRef.current[i].handleProjectileMovement({
-                    red: RedCharacter,
-                    blue: BlueCharacter,
-                    refarr: projectilesRef.current,
-                    canvas: canvs,
-                    i: i
-                });
+            stepPhysics();//allow physics 
+            //create background
+            createBackground(ctx);
+            //check if jump conditions are met for characters.
+            if (canBlueJump() && keysRef.current.w) {
+                const pos = blueCharacter.getPosition();
+                blueCharacter.applyLinearImpulse(JUMP_IMPULSE, new Vec2(pos))
+            }
+            if (canRedJump() && keysRef.current.i) {
+                const pos = redCharacter.getPosition();
+                redCharacter.applyLinearImpulse(JUMP_IMPULSE, new Vec2(pos))
             }
 
-            //render all the stuff lol
-            renderGameBackground();
-            RedCharacter.renderCharacter(ctx);
-            BlueCharacter.renderCharacter(ctx);
-            RedArm.renderArm(ctx);
-            BlueArm.renderArm(ctx);
-            for (let i = 0; i < projectilesRef.current.length; i++) {
-                //renders all projectiles on screen.
-                projectilesRef.current[i].renderProjectile(ctx);
+
+            //render stage 
+            const scC = toCanvas(stage.getPosition());//returns stage body center position
+            const fix = stage.getFixtureList();//stage only has one fixture
+            let shape;
+            if (fix) {//make sure the fixture exist
+                shape = fix.getShape();
             }
-            animationFrameId = requestAnimationFrame(gameLoop);
+            if (shape && shape.getType() === 'polygon') {//box are polygon's
+                const boxShape = shape as Box;//Cast shape to box to access propertys
+                //get half dimensions using verticies, the absolute value is 1/2 of w/h
+                const hwP: number = Math.abs(boxShape.m_vertices[0].x);
+                const hhP: number = Math.abs(boxShape.m_vertices[0].y);
+                //convert half dimensions to canvas dimensions
+                const cwC = toCanvasDimensions(hwP);
+                const chC = toCanvasDimensions(hhP)
+
+                //DRAW STAGE USING CANVAS POSITIONS
+                drawStage(ctx, { scC, cwC, chC })
+            }
+
+
+            //RENDER CHARACTERS
+            const pos = toCanvas(blueCharacter.getPosition());
+            const angle = blueCharacter.getAngle();
+            drawCharacter(ctx, pos, angle, "blue");
+            const redpos = toCanvas(redCharacter.getPosition());
+            const redangle = redCharacter.getAngle();
+            drawCharacter(ctx, redpos, redangle, "red");
+
+            //continue to next frame
+            requestAnimationFrame(gameLoop);
         };
 
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-        animationFrameId = requestAnimationFrame(gameLoop);
+        gameLoop();
+
+        window.addEventListener("keydown", handleKeyDown)
+        window.addEventListener("keyup", handleKeyUp)
 
         return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-            cancelAnimationFrame(animationFrameId);
-        };
+            window.removeEventListener("keydown", handleKeyDown)
+            window.removeEventListener("keyup", handleKeyUp)
+        }
     }, []);
 
     return <canvas ref={canvasRef} />;
 }
-
