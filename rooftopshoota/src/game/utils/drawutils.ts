@@ -1,4 +1,4 @@
-import { CANVAS } from './constants';
+import { CANVAS, ARM_LENGTH } from './constants';
 interface PosCords {
     x: number; // x position in canvas pixels
     y: number; // y position in canvas pixels
@@ -31,5 +31,13 @@ export const drawCharacter = (ctx: CanvasRenderingContext2D, pos: PosCords, angl
     ctx.rotate(angle);
     ctx.fillStyle = color;
     ctx.fillRect(-25, -50, 50, 100);
+    ctx.restore();
+}
+export const drawArm = (ctx: CanvasRenderingContext2D, pos: PosCords, angle: number) => {
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+    ctx.rotate(angle);
+    ctx.fillStyle = 'black';
+    ctx.fillRect(-5, -50, 10, ARM_LENGTH*30);
     ctx.restore();
 }

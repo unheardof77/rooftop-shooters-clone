@@ -7,7 +7,7 @@ export const createCharacter = (x: number, y: number) => {
         position: {x,y},
         angularDamping: 0.2,
     });
-    character.createFixture(new Box(0.5, 1), { density: 1, friction: 0.3 });
+    character.createFixture(new Box(0.5, 1), { density: 10, friction: 0.3 });
     character.createFixture(new Circle(0.5), {density:10, isSensor:true});
     return character;
 };

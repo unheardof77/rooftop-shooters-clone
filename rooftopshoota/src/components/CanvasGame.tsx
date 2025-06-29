@@ -5,10 +5,11 @@ import { createCharacter } from '../game/entities/Character';
 import { createStage } from '../game/entities/Stage';
 import { toCanvas, toCanvasDimensions } from '../game/utils/scale';
 import { CHARACTER, METER, JUMP_IMPULSE } from '../game/utils/constants';
-import { createBackground, drawCharacter, drawStage } from '../game/utils/drawutils'
+import { createBackground, drawArm, drawCharacter, drawStage } from '../game/utils/drawutils'
 import { returnCharacterSpawnPositions } from '../game/utils/helpers';
 import { registerContacts } from '../game/engine/contactListeners';
-import { Box, Fixture, Vec2 } from 'planck';
+import { Box, Fixture, Polygon, Vec2 } from 'planck';
+import createArm from '../game/entities/Arm';
 
 interface Keys {
     w: boolean;
@@ -37,9 +38,12 @@ export default function CanvasGame() {
             redCharacterSpawnX,
             redCharacterSpawnY
         } = returnCharacterSpawnPositions();
-
+        //create characters
         const blueCharacter = createCharacter(blueCharacterSpawnX, BlueCharacterSpawnY);
         const redCharacter = createCharacter(redCharacterSpawnX, redCharacterSpawnY);
+        //attach arms
+        const {arm:blueArm, joint:blueJoint} = createArm(blueCharacter);
+        const {arm:redArm, joint:redJoint} = createArm(redCharacter);
         //register contacts 
         const canBlueJump = registerContacts(blueCharacter, stage)
         const canRedJump = registerContacts(redCharacter, stage)
@@ -91,13 +95,21 @@ export default function CanvasGame() {
             }
 
 
-            //RENDER CHARACTERS
+            //RENDER CHARACTERS AND ARMS
             const pos = toCanvas(blueCharacter.getPosition());
-            const angle = blueCharacter.getAngle();
-            drawCharacter(ctx, pos, angle, "blue");
             const redpos = toCanvas(redCharacter.getPosition());
+            const angle = blueCharacter.getAngle();
             const redangle = redCharacter.getAngle();
+            drawCharacter(ctx, pos, angle, "blue");
             drawCharacter(ctx, redpos, redangle, "red");
+
+            //RENDER ARMS 
+            const bluePos = toCanvas(blueArm.getPosition());
+            const redPos = toCanvas(redArm.getPosition());
+            const blueAngle = blueArm.getAngle();
+            const redAngle = redArm.getAngle();
+            drawArm(ctx, bluePos, blueAngle)
+            drawArm(ctx, redPos, redAngle)
 
             //continue to next frame
             requestAnimationFrame(gameLoop);
