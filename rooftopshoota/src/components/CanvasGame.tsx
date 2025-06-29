@@ -65,12 +65,16 @@ export default function CanvasGame() {
             createBackground(ctx);
             //check if jump conditions are met for characters.
             if (canBlueJump() && keysRef.current.w) {
-                const pos = blueCharacter.getPosition();
-                blueCharacter.applyLinearImpulse(JUMP_IMPULSE, new Vec2(pos))
+                blueCharacter.applyLinearImpulse(JUMP_IMPULSE,blueCharacter.getWorldPoint(new Vec2(0,0)))
             }
             if (canRedJump() && keysRef.current.i) {
-                const pos = redCharacter.getPosition();
-                redCharacter.applyLinearImpulse(JUMP_IMPULSE, new Vec2(pos))
+                redCharacter.applyLinearImpulse(JUMP_IMPULSE,redCharacter.getWorldPoint(new Vec2(0,0)))
+            }
+
+            if(keysRef.current.e){
+                blueJoint?.setMotorSpeed(-2);
+            }else {
+                blueJoint?.setMotorSpeed(0);
             }
 
 
@@ -81,7 +85,7 @@ export default function CanvasGame() {
             if (fix) {//make sure the fixture exist
                 shape = fix.getShape();
             }
-            if (shape && shape.getType() === 'polygon') {//box are polygon's
+            if (shape?.getType() === 'polygon') {//box are polygon's
                 const boxShape = shape as Box;//Cast shape to box to access propertys
                 //get half dimensions using verticies, the absolute value is 1/2 of w/h
                 const hwP: number = Math.abs(boxShape.m_vertices[0].x);
@@ -95,7 +99,7 @@ export default function CanvasGame() {
             }
 
 
-            //RENDER CHARACTERS AND ARMS
+            //RENDER CHARACTERS
             const pos = toCanvas(blueCharacter.getPosition());
             const redpos = toCanvas(redCharacter.getPosition());
             const angle = blueCharacter.getAngle();

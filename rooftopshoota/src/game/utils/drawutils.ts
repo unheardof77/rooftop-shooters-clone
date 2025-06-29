@@ -1,4 +1,4 @@
-import { CANVAS, ARM_LENGTH } from './constants';
+import { CANVAS, ARM_LENGTH, METER } from './constants';
 interface PosCords {
     x: number; // x position in canvas pixels
     y: number; // y position in canvas pixels
@@ -38,6 +38,11 @@ export const drawArm = (ctx: CanvasRenderingContext2D, pos: PosCords, angle: num
     ctx.translate(pos.x, pos.y);
     ctx.rotate(angle);
     ctx.fillStyle = 'black';
-    ctx.fillRect(-5, -50, 10, ARM_LENGTH*30);
+        ctx.fillRect(
+        -0.1 * METER,  // x offset
+        -0.5 * METER,  // y offset (top of arm)
+        0.2 * METER,   // width
+        1.0 * METER    // height
+    )
     ctx.restore();
 }
