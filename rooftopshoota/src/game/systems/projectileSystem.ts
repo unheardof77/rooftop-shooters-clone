@@ -21,7 +21,11 @@ export function projectileSystem({prevKeysRef, keysRef, blueArm, blueCharacter, 
     projectilesRef.current.forEach((projectile, index) => {
         const pos = toCanvas(projectile.getPosition());
         drawProjectile(ctx, pos);
-
+        const userData = projectile.getUserData() as { shouldRemove?: boolean };
+        if(userData?.shouldRemove){
+            world.destroyBody(projectile);
+            projectilesRef.current.splice(index, 1);
+        }
         // Remove projectiles that go off-screen
         if (pos.y < -CANVAS.height || pos.y > CANVAS.height || pos.x < 0 || pos.x > CANVAS.width) {
             world.destroyBody(projectile);

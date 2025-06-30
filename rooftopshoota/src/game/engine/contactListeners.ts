@@ -15,14 +15,12 @@ export const registerContacts = () => {
 
         // Check for character bottom touching ground
         if (
-            (aData?.type === "characterBottom" && bData?.type === "ground") ||
-            (bData?.type === "characterBottom" && aData?.type === "ground")
+            (aData?.type === "character" && bData?.type === "ground") ||
+            (bData?.type === "character" && aData?.type === "ground")
         ) {
             contactCount++;
         }
-        const bothCharacters =
-            (aData?.type === "characterBottom" && bData?.type === "characterBottom") ||
-            (aData?.type === "characterTop" && bData?.type === "characterTop");
+        const bothCharacters = (aData?.type === "character" && bData?.type === "character");
 
         if (bothCharacters) {
             const bodyA = fixtureA.getBody();
@@ -59,8 +57,8 @@ export const registerContacts = () => {
         const bData = fixtureB.getUserData() as { type?: string };
 
         if (
-            (aData?.type === "characterBottom" && bData?.type === "ground") ||
-            (bData?.type === "characterBottom" && aData?.type === "ground")
+            (aData?.type === "character" && bData?.type === "ground") ||
+            (bData?.type === "character" && aData?.type === "ground")
         ) {
             contactCount = Math.max(0, contactCount - 1);
         }
@@ -69,12 +67,11 @@ export const registerContacts = () => {
     world.on('post-solve', contact => {
         const fixtures = [contact.getFixtureA(), contact.getFixtureB()];
         fixtures.forEach(fixture => {
-            const data = fixture.getUserData() as { type?: string };
+            const data = fixture.getUserData() as { subtype?: string };
 
-            if (data?.type === 'characterBottom') {
+            if (data?.subtype === 'bottom') {
                 const character = fixture.getBody();
                 const velocity = character.getLinearVelocity();
-                console.log(`Character velocity: ${velocity.x}, ${velocity.y}`);
                 // Detect landing
                 if (Math.abs(velocity.y) > LANDING_THRESHOLD) {
                     // Only apply horizontal roll, not vertical bounce

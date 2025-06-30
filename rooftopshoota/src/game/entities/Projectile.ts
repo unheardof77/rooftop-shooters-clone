@@ -1,6 +1,7 @@
 import { Circle, Vec2 } from 'planck';
 import { world } from '../engine/world';
-import { PROJECTILE_RADIUS, PROJECTILE_SPEED } from '../utils/constants';
+import { PROJECTILE } from '../utils/constants';
+import { PROJECTILE_CATEGORY, PROJECTILE_MASK } from '../utils/collisionGroups';
 
 export const createProjectile = (x: number, y: number, angle: number) => {
     const projectile = world.createBody({
@@ -10,9 +11,11 @@ export const createProjectile = (x: number, y: number, angle: number) => {
         fixedRotation: true
     });
     
-    projectile.createFixture(new Circle(PROJECTILE_RADIUS), {
-        density: 0.1,
-        restitution: 0.8,
+    projectile.createFixture(new Circle(PROJECTILE.radius), {
+        density: PROJECTILE.density,
+        restitution: PROJECTILE.restitution,
+        filterCategoryBits: PROJECTILE_CATEGORY, // Projectile category
+        filterMaskBits: PROJECTILE_MASK, // Collide with character/ground
         userData: { type: 'projectile' }
     });
     
@@ -23,7 +26,7 @@ export const createProjectile = (x: number, y: number, angle: number) => {
     );
     
     // Set initial velocity
-    projectile.setLinearVelocity(direction.mul(-PROJECTILE_SPEED));
+    projectile.setLinearVelocity(direction.mul(-PROJECTILE.speed));
     
     return projectile;
 };

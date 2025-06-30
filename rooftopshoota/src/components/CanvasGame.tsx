@@ -20,6 +20,7 @@ import { renderCharacters, renderArms } from '../game/systems/renderUtils';
 import { createHandleKeyDown, createHandleKeyUp } from '../game/systems/inputUtils';
 import { CANVAS } from '../game/utils/constants';
 
+
 export default function CanvasGame() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const keysRef = useRef<Keys>({ w: false, e: false, i: false, o: false });
@@ -47,6 +48,7 @@ export default function CanvasGame() {
         //ATTACH ARMS
         const { arm: blueArm, joint: blueJoint } = createArm(blueCharacter);
         const { arm: redArm, joint: redJoint } = createArm(redCharacter);
+
         //REGISTER COLLISION
         const canBlueJump = registerContacts()
         const canRedJump = registerContacts()
@@ -75,7 +77,7 @@ export default function CanvasGame() {
             renderStage(stage, ctx);
             renderCharacters(ctx, { blueCharacter, redCharacter })
             renderArms(ctx, { blueArm, redArm, blueCharacter, redCharacter })
-
+            
 
             requestAnimationFrame(gameLoop);
         };

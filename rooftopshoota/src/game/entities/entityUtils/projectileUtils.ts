@@ -1,5 +1,5 @@
 import { Body, Vec2 } from 'planck';
-import { ARM_LENGTH, PROJECTILE_SPEED } from '@/game/utils/constants';
+import { ARM_LENGTH, PROJECTILE_SPEED, PROJECTILE_KNOCKBACK } from '../../../game/utils/constants';
 import { createProjectile } from '../Projectile';
 
 export const fireProjectile = (arm: Body, character: Body, projectilesRef:Body[]) => {
@@ -20,8 +20,9 @@ export const fireProjectile = (arm: Body, character: Body, projectilesRef:Body[]
 
     // Apply recoil to character
     const recoilDirection = new Vec2(
-        Math.sin(armAngle) * PROJECTILE_SPEED * 0.5,
-        Math.cos(armAngle) * PROJECTILE_SPEED * 0.5
+        Math.sin(armAngle) * PROJECTILE_SPEED * PROJECTILE_KNOCKBACK,
+        Math.cos(armAngle) * PROJECTILE_SPEED * PROJECTILE_KNOCKBACK
     );
     character.applyLinearImpulse(recoilDirection, character.getWorldCenter());
+    arm.applyLinearImpulse(recoilDirection, arm.getWorldCenter());
 };

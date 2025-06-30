@@ -1,6 +1,6 @@
 import { CANVAS, ARM_LENGTH, METER, CHARACTER, PROJECTILE_RADIUS } from './constants';
 import { PosCords, DrawStage } from './types';
-export const createBackground = (ctx: CanvasRenderingContext2D, color:string) => {
+export const createBackground = (ctx: CanvasRenderingContext2D, color: string) => {
     ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);//clear canvas
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, CANVAS.width, CANVAS.height);//fill canvas

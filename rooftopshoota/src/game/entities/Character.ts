@@ -1,31 +1,39 @@
 import { world } from '../engine/world';
-import { Circle, Box, Vec2 } from 'planck';
+import { Circle, Box, Vec2, Fixture } from 'planck';
 import { CHARACTER } from '../utils/constants';
+import { GROUND_CATEGORY, CHARACTER_MASK } from '../utils/collisionGroups';
 
 export const createCharacter = (x: number, y: number) => {
     const character = world.createBody({
         type: 'dynamic',
         position: { x, y },
-        angularDamping: 0.8,
+        angularDamping: CHARACTER.dampening,
         fixedRotation: false
     });
 
     // Bottom circle (jump contact point)
     const bottomFixture = character.createFixture(new Circle(CHARACTER.radius), {
-        density: 3,
-        friction: 0.3,
-        restitution: 0.2
+        density: CHARACTER.bottom.density,
+        friction: CHARACTER.bottom.friction,
+        restitution: CHARACTER.bottom.restitution,
+        filterCategoryBits: GROUND_CATEGORY, // Character category
+        filterMaskBits: CHARACTER_MASK, // Collide with ground and projectiles
     });
-    bottomFixture.setUserData({ type: 'characterBottom' });
+    bottomFixture.setUserData({ type: 'character', subtype: 'bottom' });
 
     // Upper body
     const bodyHeight = CHARACTER.height - CHARACTER.radius;
     const topFixture = character.createFixture(
         new Box(CHARACTER.width / 2, bodyHeight / 2,
             new Vec2(0, CHARACTER.radius + bodyHeight / 2)),
-        { density: 0.5, friction: 0.2 }
+        { 
+            density: CHARACTER.top.density, 
+            friction: CHARACTER.top.friction,
+            filterCategoryBits: GROUND_CATEGORY, // Character category
+            filterMaskBits: CHARACTER_MASK, // Collide with ground and projectiles
+        }
     );
-    topFixture.setUserData({ type: 'characterTop' });
+    topFixture.setUserData({ type: 'character', subtype: 'top' });
 
     return character;
 };
