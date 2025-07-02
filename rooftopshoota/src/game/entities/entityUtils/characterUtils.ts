@@ -1,10 +1,11 @@
-import { Vec2 } from 'planck';
+import { Vec2, Body } from 'planck';
 import { clampJumpAngle } from '../../utils/helpers';
 import { JUMP_COOLDOWN, JUMP_IMPULSE, JUMP_SUSTAIN_FORCE, MAX_JUMP_DURATION, HORIZONTAL_JUMP_FACTOR } from '../../utils/constants';
-import { AddCharacterJump } from '../../utils/types';
+import { AddCharacterJump, GameStatus, Color } from '../../utils/types';
+import { world } from '../../engine/world';
 
 
-export function addCharacterJump({ canBlueJump, blueCharacter, canRedJump, redCharacter, keysRef, jumpState }: AddCharacterJump) {
+export function addCharacterJump({ canBlueJump, canRedJump, blueCharacter, redCharacter, keysRef, jumpState }: AddCharacterJump) {
     if (canBlueJump() && keysRef.current.w) {
         const now = Date.now();
         if (now - jumpState.blue.lastJumpTime > JUMP_COOLDOWN && !jumpState.blue.isJumping) {
@@ -86,9 +87,10 @@ export function addCharacterJump({ canBlueJump, blueCharacter, canRedJump, redCh
                 redCharacter.applyForceToCenter(
                     jumpDirection.mul(JUMP_SUSTAIN_FORCE)
                 );
-            }
+            }   
         }
     } else {
         jumpState.red.isJumping = false;
     }
 }
+

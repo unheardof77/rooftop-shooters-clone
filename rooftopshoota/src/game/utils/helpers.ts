@@ -16,14 +16,14 @@ export const returnStageDimensions = (canvasWidth: number, canvasHeight: number)
 export const returnCharacterSpawnPositions = () => {
     //Get stage information
     const { swP, shP, scxP } = returnStageDimensions(CANVAS.width, CANVAS.height);
-    const characterHalfHeightP = (CHARACTER.height / 2) / METER;
+    const characterHalfHeightP = (CHARACTER.height / 2);
     const stageLeftEdgeP = scxP - (swP / 2);
     const stageRightEdgeP = scxP + (swP / 2);
     //calculate characters x and y spawns
     const blueCharacterSpawnX = stageLeftEdgeP + 3;
-    const BlueCharacterSpawnY = shP + characterHalfHeightP + 0.01;
+    const BlueCharacterSpawnY = shP + characterHalfHeightP + 1;
     const redCharacterSpawnX = stageRightEdgeP - 3;
-    const redCharacterSpawnY = shP + characterHalfHeightP + 0.01;
+    const redCharacterSpawnY = shP + characterHalfHeightP + 1;
 
     return { bx:blueCharacterSpawnX, by:BlueCharacterSpawnY, rx:redCharacterSpawnX, ry:redCharacterSpawnY };
 }

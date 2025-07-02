@@ -7,7 +7,17 @@ import { CANVAS } from "../utils/constants";
 
 
 
-export function projectileSystem({prevKeysRef, keysRef, blueArm, blueCharacter, redArm, redCharacter, projectilesRef, ctx}:ProjectileSystem) {
+export function projectileSystem({
+    prevKeysRef, 
+    keysRef, 
+    blueArm, 
+    blueCharacter, 
+    redArm, 
+    redCharacter, 
+    projectilesRef, 
+    ctx,
+    spatialGrid // NEW: Optional spatial grid parameter
+}: ProjectileSystem) {
     //fire bullet if it is right after releasing key
     if (prevKeysRef.current.e && !keysRef.current.e) {
         fireProjectile(blueArm, blueCharacter, projectilesRef.current);
@@ -21,6 +31,23 @@ export function projectileSystem({prevKeysRef, keysRef, blueArm, blueCharacter, 
     projectilesRef.current.forEach((projectile, index) => {
         const pos = toCanvas(projectile.getPosition());
         drawProjectile(ctx, pos);
+        
+        // NEW: Use spatial partitioning for collision detection if available
+        if (spatialGrid) {
+            const nearbyObjects = spatialGrid.getNearbyObjects(projectile, 20);
+            const hasCollision = nearbyObjects.some((obj:any) => {
+                // Quick collision check with nearby objects only
+                const objPos = obj.getPosition();
+                const distance = Math.sqrt((pos.x - objPos.x) ** 2 + (pos.y - objPos.y) ** 2);
+                return distance < 30; // Collision radius
+            });
+            
+            if (hasCollision) {
+                projectile.setUserData({ shouldRemove: true });
+            }
+        }
+        
+        // Existing removal logic
         const userData = projectile.getUserData() as { shouldRemove?: boolean };
         if(userData?.shouldRemove){
             world.destroyBody(projectile);

@@ -1,16 +1,43 @@
 import { CANVAS, ARM_LENGTH, METER, CHARACTER, PROJECTILE_RADIUS } from './constants';
-import { PosCords, DrawStage } from './types';
-export const createBackground = (ctx: CanvasRenderingContext2D, color: string) => {
-    ctx.clearRect(0, 0, CANVAS.width, CANVAS.height);//clear canvas
-    ctx.fillStyle = color;
-    ctx.fillRect(0, 0, CANVAS.width, CANVAS.height);//fill canvas
-}
+import { PosCords, DrawStage, Color } from './types';
+
 //takes in canvas context and Canvas dimesions
 export const drawStage = (ctx: CanvasRenderingContext2D, { scC, cwC, chC }: DrawStage) => {
     ctx.save();
     ctx.translate(scC.x, scC.y);//move origin to center of stage
     ctx.fillStyle = 'grey';
     ctx.fillRect(-cwC / 2, -chC / 2, cwC, chC)
+    ctx.restore();
+}
+export const drawScore = (ctx: CanvasRenderingContext2D, score: { blue: number, red: number }) => {
+    ctx.save();
+    ctx.fillStyle = 'black';
+    ctx.font = '16px Arial';
+    ctx.fillText(`Blue: ${score.blue}`, 10, 30);
+    ctx.fillText(`Red: ${score.red}`, 10, 50);
+    ctx.restore();
+}
+
+export const drawPaused = (ctx: CanvasRenderingContext2D) => {
+    const centerX = CANVAS.width / 2;
+    const centerY = CANVAS.height / 2 -20;
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.fillStyle = 'black';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Paused', 0, 0);
+    ctx.restore();
+}
+export const drawGameOver = (ctx: CanvasRenderingContext2D, winner:Color) => {
+    const centerX = CANVAS.width / 2;
+    const centerY = CANVAS.height / 2;
+    ctx.save();
+    ctx.translate(centerX, centerY);
+    ctx.fillStyle = 'black';
+    ctx.font = '32px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${winner} wins!`, 0, 0);
     ctx.restore();
 }
 //draws a character at a given position and angle

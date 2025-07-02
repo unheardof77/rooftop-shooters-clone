@@ -3,6 +3,11 @@ export const METER = 30; // 50px = 1 meter
 export const STAGE = { x: 250, y: 400, width: 500, height: 400 };
 export const ARM_ROTATION_SPEED = 0.02;
 export const ARM_LENGTH = 1; // in meters
+export const ARM = {
+    width: 0.1,
+    height: 1,
+    color: 'black'
+}
 export const CHARACTER = {
     width: 0.8,     // Physics units (meters)
     height: 2.0,    // Physics units (meters)

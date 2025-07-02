@@ -1,8 +1,8 @@
 import { toCanvas, toCanvasDimensions } from '../utils/scale';
 import { drawStage } from '../utils/drawutils';
 import { Box, Body } from 'planck';
-import { drawCharacter, drawArm } from '../utils/drawutils';
-import { RenderArms, RenderCharacters } from '../utils/types';
+import { drawCharacter, drawArm, drawScore, drawPaused, drawGameOver } from '../utils/drawutils';
+import { RenderArms, RenderCharacters, GameStatus } from '../utils/types';
 
 
 export function renderStage(stage: Body, ctx: CanvasRenderingContext2D) {
@@ -26,6 +26,22 @@ export function renderStage(stage: Body, ctx: CanvasRenderingContext2D) {
         drawStage(ctx, { scC, cwC, chC })
     }
 }
+
+export function renderScore(ctx: CanvasRenderingContext2D, score: { blue: number, red: number }) {
+    drawScore(ctx, score);
+}
+
+export function renderPaused(ctx: CanvasRenderingContext2D) {
+    drawPaused(ctx);
+}
+
+export function renderGameOver(ctx: CanvasRenderingContext2D, gameStatus:GameStatus) {
+    if(gameStatus.gameStatus === "gameOver"){
+        const winner = gameStatus.score.blue > gameStatus.score.red ? "blue" : "red";
+        drawGameOver(ctx, winner);
+    }
+}
+
 export function renderCharacters(ctx: CanvasRenderingContext2D, { blueCharacter, redCharacter }: RenderCharacters) {
     const blueCharPos = toCanvas(blueCharacter.getPosition());
     const redCharPos = toCanvas(redCharacter.getPosition());
