@@ -49,7 +49,7 @@ export class RenderCuller {
             // Only render if projectile is visible (within viewport + margin)
             if (this.isVisible(pos.x - radius, pos.y - radius, radius * 2, radius * 2)) {
                 // Track the projectile for dirty region management
-                renderer.trackObject(`projectile_${index}`, pos.x - radius, pos.y - radius, radius * 2, radius * 2);
+                renderer.trackObject(`projectile_${index}`, pos, 0);
                 // Draw the projectile
                 this.drawProjectileOptimized(ctx, pos);
             }

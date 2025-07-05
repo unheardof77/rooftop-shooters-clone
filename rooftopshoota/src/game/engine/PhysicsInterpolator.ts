@@ -59,6 +59,12 @@ class PhysicsInterpolator {
         }
     }
     
+    // Cleanup method to prevent memory leaks
+    cleanup(): void {
+        this.previousStates.clear();
+        this.currentStates.clear();
+    }
+    
     // Get interpolated state for rendering
     getInterpolatedState(body: Body): PhysicsState | null {
         const current = this.currentStates.get(body);

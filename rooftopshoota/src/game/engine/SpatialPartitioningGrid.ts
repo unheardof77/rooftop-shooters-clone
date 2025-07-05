@@ -1,12 +1,12 @@
-import { Body } from "planck";
-import { PhysicsObject, Bounds } from "../utils/types";
+import { Body, Vec2 } from "planck";
+import { Bounds, WorldBounds, FixtureUserData } from "../utils/types";
 
 class SpatialPartitioningGrid {
     private grid: Map<string, Set<Body>> = new Map();
     private cellSize: number;
-    private worldBounds: { minX: number, maxX: number, minY: number, maxY: number };
+    private worldBounds: WorldBounds;
     
-    constructor(cellSize: number = 100, worldBounds: any) {
+    constructor(cellSize: number = 100, worldBounds: WorldBounds) {
         this.cellSize = cellSize;
         this.worldBounds = worldBounds;
     }
@@ -43,7 +43,24 @@ class SpatialPartitioningGrid {
     
     private getBodyBounds(body: Body): Bounds {
         const pos = body.getPosition();
-        const radius = 20; // Default radius for collision detection
+        const bodyType = this.getBodyType(body);
+        
+        // Use appropriate radius based on body type
+        let radius = 20; // Default radius
+        switch (bodyType) {
+            case 'character':
+                radius = 40; // Character radius
+                break;
+            case 'projectile':
+                radius = 10; // Projectile radius
+                break;
+            case 'arm':
+                radius = 30; // Arm radius
+                break;
+            default:
+                radius = 20; // Default
+        }
+        
         return {
             minX: pos.x - radius,
             maxX: pos.x + radius,
@@ -147,7 +164,7 @@ class SpatialPartitioningGrid {
         // Check fixtures for type information
         let fixtures = body.getFixtureList();
         while (fixtures) {
-            const userData = fixtures.getUserData() as { type?: string };
+            const userData = fixtures.getUserData() as FixtureUserData;
             if (userData?.type) return userData.type;
             fixtures = fixtures.getNext();
         }

@@ -1,28 +1,36 @@
 import { world } from './world';
 import { Vec2 } from 'planck';
 import { LANDING_THRESHOLD, ROLL_MULTIPLIER } from '../utils/constants';
+import { Color } from '../utils/types';
 
-
+let jumpTracker = {blue:false, red:false}
 
 export const registerContacts = () => {
-    let contactCount = 0; // Track multiple contacts
+
+    const canBlueJump = () => {
+        return jumpTracker.blue;
+    }
+    const canRedJump = () => {
+        return jumpTracker.red;
+    }
 
     world.on('begin-contact', (contact) => {
         const fixtureA = contact.getFixtureA();
         const fixtureB = contact.getFixtureB();
-        const aData = fixtureA.getUserData() as { type?: string };
-        const bData = fixtureB.getUserData() as { type?: string };
+        const aData = fixtureA.getUserData() as { type?: string, color?: Color };
+        const bData = fixtureB.getUserData() as { type?: string, color?: Color };
 
-        // Check for character bottom touching ground
-        if (
-            (aData?.type === "character" && bData?.type === "ground") ||
-            (bData?.type === "character" && aData?.type === "ground")
-        ) {
-            contactCount++;
+        // Check for if its a character touching ground
+        if ((aData?.type === "character" && bData?.type === "ground") ||
+            (bData?.type === "character" && aData?.type === "ground")) {
+            if(aData?.color){
+                jumpTracker[aData.color] = true;
+            }else if(bData?.color){
+                jumpTracker[bData.color] = true;
+            }
         }
-        const bothCharacters = (aData?.type === "character" && bData?.type === "character");
-
-        if (bothCharacters) {
+        // Check for if its a character touching another character
+        if (aData?.type === "character" && bData?.type === "character") {
             const bodyA = fixtureA.getBody();
             const bodyB = fixtureB.getBody();
 
@@ -35,32 +43,24 @@ export const registerContacts = () => {
             bodyA.applyLinearImpulse(impulse, bodyA.getWorldCenter());
             bodyB.applyLinearImpulse(impulse.neg(), bodyB.getWorldCenter());
         }
-        // Projectile hits character
-        if ((aData?.type === "projectile" && bData?.type === "character") ||
-            (bData?.type === "projectile" && aData?.type === "character")) {
-
-            const projectile = aData?.type === "projectile"
-                ? fixtureA.getBody()
-                : fixtureB.getBody();
-
-            // Mark projectile for removal
-            projectile.setUserData({ shouldRemove: true });
-
-            // Add damage effects here
-            }
+        // Projectile collision detection now handled by spatial grid for better performance
         });
 
     world.on('end-contact', (contact) => {
         const fixtureA = contact.getFixtureA();
         const fixtureB = contact.getFixtureB();
-        const aData = fixtureA.getUserData() as { type?: string };
-        const bData = fixtureB.getUserData() as { type?: string };
+        const aData = fixtureA.getUserData() as { type?: string, color?: Color };
+        const bData = fixtureB.getUserData() as { type?: string, color?: Color };
 
         if (
             (aData?.type === "character" && bData?.type === "ground") ||
             (bData?.type === "character" && aData?.type === "ground")
         ) {
-            contactCount = Math.max(0, contactCount - 1);
+            if(aData?.color){
+                jumpTracker[aData.color] = false;
+            }else if(bData?.color){
+                jumpTracker[bData.color] = false;
+            }
         }
     });
 
@@ -81,5 +81,5 @@ export const registerContacts = () => {
             }
         });
     });
-    return () => contactCount > 0;
+    return [canBlueJump, canRedJump];
 };

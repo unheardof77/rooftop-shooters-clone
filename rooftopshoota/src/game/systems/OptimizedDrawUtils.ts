@@ -142,8 +142,8 @@ export class OptimizedDrawUtils {
         
         // Draw arm as a rectangle
         // Convert physics dimensions to canvas pixels
-        const armWidthPixels =  ARM.width*METER;
-        const armHeightPixels = (ARM.height*METER)   
+        const armWidthPixels = ARM.width * METER;
+        const armHeightPixels = ARM.height * METER;
         
         // Position rectangle so it extends downward from the attachment point
         // (following the pattern from Arm.ts where arms extend DOWNWARD)
@@ -180,5 +180,79 @@ export class OptimizedDrawUtils {
             widthPixels + 6,
             6
         );
+    }
+
+    public drawScore(score: { blue: number, red: number }): void {
+        this.ctx.save();
+        this.ctx.fillStyle = 'black';
+        this.ctx.font = '16px Arial';
+        this.ctx.fillText(`Blue: ${score.blue}`, 10, 30);
+        this.ctx.fillText(`Red: ${score.red}`, 10, 50);
+        this.ctx.restore();
+    }
+
+    public drawPaused(): void {
+        const centerX = this.ctx.canvas.width / 2;
+        const centerY = this.ctx.canvas.height / 2 - 20;
+        this.ctx.save();
+        this.ctx.translate(centerX, centerY);
+        this.ctx.fillStyle = 'black';
+        this.ctx.font = '16px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('Paused', 0, 0);
+        this.ctx.restore();
+    }
+
+    public drawGameOver(winner: string): void {
+        const centerX = this.ctx.canvas.width / 2;
+        const centerY = this.ctx.canvas.height / 2;
+        this.ctx.save();
+        this.ctx.translate(centerX, centerY);
+        this.ctx.fillStyle = 'black';
+        this.ctx.font = '32px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(`${winner} wins!`, 0, 0);
+        this.ctx.restore();
+    }
+
+    public drawFPS(currentFPS: number, targetFPS: number): void {
+        this.ctx.save();
+        this.ctx.fillStyle = 'black';
+        this.ctx.font = '14px Arial';
+        this.ctx.textAlign = 'right';
+        
+        // Position in top-right corner with some padding
+        const x = this.ctx.canvas.width - 10;
+        const y = 20;
+        
+        // Draw current FPS
+        this.ctx.fillText(`FPS: ${currentFPS}`, x, y);
+        
+        // Draw target FPS on the next line
+        this.ctx.fillText(`Target: ${targetFPS}`, x, y + 18);
+        
+        // Color code based on performance
+        if (currentFPS >= targetFPS * 0.9) {
+            this.ctx.fillStyle = 'green';
+        } else if (currentFPS >= targetFPS * 0.7) {
+            this.ctx.fillStyle = 'orange';
+        } else {
+            this.ctx.fillStyle = 'red';
+        }
+        
+        // Draw performance indicator
+        this.ctx.fillText(`FPS: ${currentFPS}`, x, y);
+        
+        this.ctx.restore();
+    }
+
+    // Draw a single projectile with optimized rendering
+    public drawProjectile(pos: PosCords): void {
+        this.ctx.save();
+        this.ctx.fillStyle = 'red';
+        this.ctx.beginPath();
+        this.ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.restore();
     }
 }

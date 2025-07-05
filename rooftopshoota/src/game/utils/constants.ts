@@ -31,7 +31,7 @@ export const PROJECTILE = {
 }
 export const CANVAS = { width: 1000, height: 800 }
 export const JUMP_SUSTAIN_FORCE = 10;
-export const MAX_JUMP_DURATION = 300; // ms
+export const MAX_JUMP_DURATION = 200; // ms
 export const LANDING_THRESHOLD = 1; // Minimum velocity for roll
 export const ROLL_MULTIPLIER = 50; // Roll intensity
 export const PHYSICS_CONFIG = {
@@ -44,7 +44,7 @@ export const STABILIZATION_FORCE = 10;
 export const JUMP_IMPULSE = 10; // Total jump force magnitude
 export const HORIZONTAL_JUMP_FACTOR = 0.5; // Ratio of horizontal to vertical force
 export const MAX_JUMP_ANGLE = Math.PI/2; // 60 degrees maximum tilt for jumping
-export const JUMP_COOLDOWN = 500; // ms cooldown
+export const JUMP_COOLDOWN = 1000; // ms cooldown
 export const PROJECTILE_RADIUS = 0.1; // Physics units (meters)
 export const PROJECTILE_SPEED = 10;   // Physics units per second
 export const PROJECTILE_KNOCKBACK = 0.3; 

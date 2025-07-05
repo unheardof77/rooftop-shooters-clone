@@ -1,6 +1,6 @@
 import { Body, Vec2 } from "planck";
 import { returnCharacterSpawnPositions } from "../utils/helpers";
-import { GameStatus } from "../utils/types";
+import { GameStatus, GameStatusType } from "../utils/types";
 
 function checkCharacterFall(character: Body) {
     const data = character.getUserData() as {isDead: boolean};
@@ -21,12 +21,12 @@ export function respawnSystem(blueCharacter: Body, redCharacter: Body, setGameSt
         setGameStatus((last:GameStatus) => {
             const newBlueScore = last.score.blue + 1;
             if(newBlueScore >= 3){
-                return {...last, gameStatus: "gameOver", score: {
+                return {...last, gameStatus: GameStatusType.GAME_OVER, score: {
                     blue: newBlueScore,
                     red: last.score.red
                 }};
             }
-            return {...last, gameStatus: "playing", score: {
+            return {...last, gameStatus: GameStatusType.PLAYING, score: {
                 blue: newBlueScore,
                 red: last.score.red
             }};
@@ -36,12 +36,12 @@ export function respawnSystem(blueCharacter: Body, redCharacter: Body, setGameSt
         setGameStatus((last:GameStatus) => {
             const newRedScore = last.score.red + 1;
             if(newRedScore >= 3){
-                return {...last, gameStatus: "gameOver", score: {
+                return {...last, gameStatus: GameStatusType.GAME_OVER, score: {
                     blue: last.score.blue,
                     red: newRedScore
                 }};
             }
-            return {...last, gameStatus: "playing", score: {
+            return {...last, gameStatus: GameStatusType.PLAYING, score: {
                 blue: last.score.blue,
                 red: newRedScore
             }};

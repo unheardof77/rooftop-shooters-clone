@@ -1,25 +1,43 @@
-import PhysicsInterpolator from "../engine/PhysicsInterpolator";
-import SpatialPartitioningGrid from "../engine/SpatialPartitioningGrid";
-import { FrameRateController } from "./FrameRateController";
-import { GameStatus } from "../utils/types";
+import PhysicsInterpolator from "./PhysicsInterpolator";
+import SpatialPartitioningGrid from "./SpatialPartitioningGrid";
+import { FrameRateController } from "../systems/Controllers/FrameRateController";
+import { GameStatus, Keys, MountInputSystem, WorldBounds } from "../utils/types";
 import { CANVAS } from "../utils/constants";
-import { world } from "../engine/world";
+import { world } from "./world";
 import { Body } from "planck";
+import ProjectileSystem from "../systems/ProjectileSystem";
+import InputSystem from "../systems/InputSystem";
 
-// NEW: Centralized game loop management
-export class OptimizedGameLoop {
+
+export class GameEngine {
     private physicsInterpolator: PhysicsInterpolator;
     private spatialGrid: SpatialPartitioningGrid;
     private frameController: FrameRateController;
+    private projectileSystem: ProjectileSystem;
+    private inputSystem: InputSystem | null;
     private lastTime: number = 0;
     
     constructor() {
         this.physicsInterpolator = new PhysicsInterpolator();
-        this.spatialGrid = new SpatialPartitioningGrid(100, {
+        const worldBounds: WorldBounds = {
             minX: 0, maxX: CANVAS.width,
             minY: 0, maxY: CANVAS.height
-        });
+        };
+        this.spatialGrid = new SpatialPartitioningGrid(100, worldBounds);
         this.frameController = new FrameRateController(60);
+        this.projectileSystem = new ProjectileSystem(this.spatialGrid);
+        this.inputSystem = null;
+    }
+
+    mountInputSystem({keysRef, prevKeysRef, setGameStatus, blueJoint, redJoint}:MountInputSystem){
+        this.inputSystem = new InputSystem(keysRef, prevKeysRef, blueJoint, redJoint);
+        return this.inputSystem.initialize({setGameStatus});
+    }
+
+    mountEventListeners(canBlueJump: () => boolean, canRedJump: () => boolean, blueCharacter: Body, redCharacter: Body, blueArm: Body, redArm: Body){
+        this.inputSystem?.handleCharacterJump(canBlueJump, canRedJump, blueCharacter, redCharacter);
+        this.inputSystem?.handleArmMotorControl();
+        this.inputSystem?.handleProjectileFire(blueArm, redArm, blueCharacter, redCharacter, this.projectileSystem.fireProjectile.bind(this.projectileSystem));
     }
     
     // Main update method called from game loop
@@ -30,6 +48,8 @@ export class OptimizedGameLoop {
         // Handle physics at fixed timestep
         if (gameStatus.gameStatus === "playing") {
             this.physicsInterpolator.updatePhysics(deltaTime);
+        }else {
+            console.log("skipping physics update");
         }
         
         // Update spatial partitioning
@@ -70,4 +90,9 @@ export class OptimizedGameLoop {
     removeObject(body: Body) {
         this.spatialGrid.removeObject(body);
     }
-}
+
+    // Get projectile system for rendering and updates
+    getProjectileSystem() {
+        return this.projectileSystem;
+    }
+} 

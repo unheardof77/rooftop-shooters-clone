@@ -2,8 +2,9 @@ import { world } from '../engine/world';
 import { Circle, Box, Vec2, Fixture } from 'planck';
 import { CHARACTER } from '../utils/constants';
 import { GROUND_CATEGORY, CHARACTER_MASK } from '../utils/collisionGroups';
+import { Color } from '../utils/types';
 
-export const createCharacter = (x: number, y: number) => {
+export const createCharacter = (x: number, y: number, color: Color) => {
     const character = world.createBody({
         type: 'dynamic',
         position: { x, y },
@@ -19,7 +20,7 @@ export const createCharacter = (x: number, y: number) => {
         filterCategoryBits: GROUND_CATEGORY, // Character category
         filterMaskBits: CHARACTER_MASK, // Collide with ground and projectiles
     });
-    bottomFixture.setUserData({ type: 'character', subtype: 'bottom' });
+    bottomFixture.setUserData({ type: 'character', subtype: 'bottom', color });
 
     // Upper body
     const bodyHeight = CHARACTER.height - CHARACTER.radius;
@@ -33,7 +34,7 @@ export const createCharacter = (x: number, y: number) => {
             filterMaskBits: CHARACTER_MASK, // Collide with ground and projectiles
         }
     );
-    topFixture.setUserData({ type: 'character', subtype: 'top' });
+    topFixture.setUserData({ type: 'character', subtype: 'top', color });
 
     return character;
 };
